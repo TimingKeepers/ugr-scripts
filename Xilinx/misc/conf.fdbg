@@ -1,0 +1,3 @@
+FILE_IN=<path_to_vhdl>
+DEBUG=<signals_to_debug_separated_by_commas>
+SHOW_DEBUG_ONLY=<YES|NO>
