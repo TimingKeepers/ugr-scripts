@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+import sys
+import argparse
+
+parser = argparse.ArgumentParser(description='Converts a raw register file from Texas Instruments CodeLoader\nto a C struct ready to be copypasted in Zynq-based HW first-stage bootloaders')
+
+parser.add_argument("inputfile", help="Input file from CodeLoader")
+parser.add_argument("outputfile", help="Output file")
+
+args = parser.parse_args()
+
+infile, outfile = args.inputfile, args.outputfile
+
+with open(infile,"r") as inf, open(outfile,"w") as outf:
+	outf.write("const struct {int reg; uint32_t val;} tilmk03086_regs_WR[] = {\n")
+	for line in inf:
+		tmp=line.split("\t")
+		reg=tmp[0].partition(' ')[0][1:]
+		int_reg=int(reg)
+		val=tmp[1].rstrip()
+		if int_reg<31 :
+			outf.write("{"+reg+", "+val+"},\n")
+		else :
+			outf.write("{"+reg+", "+val+"}};")
+
+
+
+
