@@ -3,8 +3,8 @@
 import sys
 import argparse
 
-parser = argparse.ArgumentParser(description='Converts a raw register file from Texas Instruments CodeLoader\nto a C struct ready to be copypasted in Zynq-based HW first-stage bootloaders')
-
+parser = argparse.ArgumentParser(description='Converts a raw register file from Texas Instruments CodeLoader\nto a C struct ready to be copypasted in Zynq-based HW first-stage bootloaders',
+								epilog='lmkconf - 2016, Jose Lopez Jimenez - joselj@ugr.es')
 parser.add_argument("inputfile", help="Input file from CodeLoader")
 parser.add_argument("outputfile", help="Output file")
 
