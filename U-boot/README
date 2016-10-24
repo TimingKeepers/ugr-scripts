@@ -1,0 +1,36 @@
+============================================================
+Title:            README
+
+Author:           Jose Lopez
+
+Date:             2016-10-13
+
+Email address:    joselj@ugr.es
+
+Description:      Brief readme file to use uboot-mkimage.sh
+
+============================================================
+
+To make use of uboot-mkimage.sh, you will need a copy of the ugr-scripts
+repository which is available at https://github.com/TimingKeepers/ugr-scripts
+
+The script can be found at <repo_directory>/U-boot/uboot-mkimage.sh
+
+
+First of all, you will need to export an environment variable:
+
+  $ export SCRIPT_BASE_FOLDER=/absolute/path/to/repository/ugr-scripts
+
+
+Then, if you have a uramimage.image.gz file and you want to unpack it to some
+location, just run:
+
+  $ ./uboot-mkimage.sh -u -r /absolute/path/where/image/will/be/unpacked -i /absolute/path/to/uramdisk.image.gz
+
+
+Or the other way around (packing rootfs to a file):
+
+  $ ./uboot-mkimage.sh -p -r /absolute/path/where/image/will/be/unpacked -i /absolute/path/to/uramdisk.image.gz
+
+
+Easy!

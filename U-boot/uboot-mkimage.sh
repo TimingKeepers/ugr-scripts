@@ -9,7 +9,29 @@
 #
 
 #include util.sh
+
+function help_msg {
+	echo -e  "-------------------------------------------------------------------"
+	echo -e  "$(basename $0) -p -u -r <rootfs> -i <image>"
+	echo -e  ""
+	echo -e  "Options:"
+	echo -e  "\t-m: Mode (pack|unpack)"
+	echo -e  "\t-c: Compress mode (none|gzip)"
+	echo -e  "\t-r: Root filesystem folder"
+	echo -e  "\t-i: Image name without extension"
+	echo -e  "\t-h: Print help message"
+	echo -e  ""
+	echo -e  "Variable SCRIPT_BASE_FOLDER must contain repository parent folder"
+	echo -e  ""
+	echo -e  "-------------------------------------------------------------------"
+	echo -e  "Copyright (C) 2015, University of Granada"
+	echo -e  "Miguel Jimenez Lopez <klyone@ugr.es>"
+	echo -e  "GPLv2 License or later"
+	echo -e  "-------------------------------------------------------------------"
+}
+
 if [ -z ${SCRIPT_BASE_FOLDER} ] ; then
+	help_msg
 	echo "ERROR: SCRIPT_BASE_FOLDER var not defined!"
 	exit -1
 fi
@@ -47,24 +69,6 @@ function uboot_image_pack {
 			fail "pack mode invalid: none | gzip"
 			;;
 	esac
-}
-
-function help_msg {
-	echo_norm "-------------------------------------------------------------------"
-	echo_norm "$(basename $0) -p -u -r <rootfs> -i <image>"
-	echo_norm ""
-	echo_norm "Options:"
-	echo_norm "\t-m: Mode (pack|unpack)"
-	echo_norm "\t-c: Compress mode (none|gzip)"
-	echo_norm "\t-r: Root filesystem folder"
-	echo_norm "\t-i: Image name without extension"
-	echo_norm "\t-h: Print help message"
-	echo_norm ""
-	echo_norm "-------------------------------------------------------------------"
-	echo_norm "Copyright (C) 2015, University of Granada"
-	echo_norm "Miguel Jimenez Lopez <klyone@ugr.es>"
-	echo_norm "GPLv2 License or later"
-	echo_norm "-------------------------------------------------------------------"
 }
 
 while getopts ":m:c:r:i:h" opt; do
