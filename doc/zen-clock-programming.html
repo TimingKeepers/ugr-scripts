@@ -128,7 +128,9 @@
 </ul>
 <h2 id="configurar-lmk03806"><a href="#configurar-lmk03806">Configurar LMK03806</a></h2>
 <p>Configurar los registros del LMK partiendo de un fichero de configuración .mac generado desde CodeLoader (ver Google Drive del equipo) es muy sencillo si tenemos un proyecto de FSBL funcional como punto de partida. Se necesita sólamente el fichero .mac y el script lmkconf alojado en <a href="https://github.com/TimingKeepers/ugr-scripts">el repositorio ugr-scripts</a>.</p>
-<p>Escribiendo source lmkconf fichero.mac salida.txt se genera un fichero .txt que contiene el struct con los nuevos valores de los registros del LMK03806.</p>
+<p>Escribiendo</p>
+<p><code>source lmkconf fichero.mac salida.txt</code></p>
+<p>se genera un fichero .txt que contiene el struct con los nuevos valores de los registros del LMK03806.</p>
 <p>Ya de vuelta al proyecto del fsbl, sustituiremos el struct presente en el fichero [ruta al fsbl]/src/lmk03806.c y continuamos con los pasos indicados para <a href="#fsbl">generar un nuevo FSBL</a>.</p>
 <h2 id="configurar-ad9516"><a href="#configurar-ad9516">Configurar AD9516</a></h2>
 <p>La configuración del AD9516 no se realiza en el FSBL sino que se programa mediante la ejecución de un binario <em>configure_ad9516</em> durante el arranque del SO, generalmente justo después de programar la PL de la Zen. Para cambiar los registros que se programan al chip se ha de generar un nuevo binario en el sistema de archivos.</p>
@@ -142,8 +144,9 @@
 <li>Llevar el fichero .stp al directorio donde están las herramientas relacionadas /…/wr-zynq-os/userspace/tools</li>
 <li>Ejecutar el script de python gen_ad9516_config.py pasándole como argumento el fichero .stp. Este script generará una nueva cabecera en ad9516_config.h .</li>
 </ul>
-<p>Ya sólo queda recompilar el espacio de usuario. Esto se puede conseguir llamando al script wrz-build-all desde fuera del directorio del repositorio y llevando a cabo los pasos 3, 4 y 5: ./wr-zynq-os/build/wrz-build-all –step=03 &amp;&amp; ./wr-zynq-os/build/wrz-build-all –step=04 &amp;&amp; ./wr-zynq-os/build/wrz-build-all –step=05</p>
-<p>Y la imagen del sistema de archivos con la nueva configuración para el AD9516 se encontrará en ./images/uramdisk.image.gz .</p>
+<p>Ya sólo queda recompilar el espacio de usuario. Esto se puede conseguir llamando al script wrz-build-all desde fuera del directorio del repositorio y llevando a cabo los pasos 3, 4 y 5:</p>
+<p><code>./wr-zynq-os/build/wrz-build-all --step=03 &amp;&amp; ./wr-zynq-os/build/wrz-build-all --step=04 &amp;&amp;</code> <code>./wr-zynq-os/build/wrz-build-all --step=05</code></p>
+<p>Y la imagen del sistema de archivos con la nueva configuración para el AD9516 se encontrará en ./images/uramdisk.image.gz.</p>
 <div id="footer">
    2015-2016 <a href="mailto:joselj@ugr.es">Jose Lopez Jimenez</a>
 </div>
