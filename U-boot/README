@@ -25,12 +25,12 @@ First of all, you will need to export an environment variable:
 Then, if you have a uramimage.image.gz file and you want to unpack it to some
 location, just run:
 
-  $ ./uboot-mkimage.sh -u -r /absolute/path/where/image/will/be/unpacked -i /absolute/path/to/uramdisk.image.gz
+  $ ./uboot-mkimage.sh -m unpack -r /absolute/path/where/image/will/be/unpacked -i /absolute/path/to/uramdisk.image.gz
 
 
 Or the other way around (packing rootfs to a file):
 
-  $ ./uboot-mkimage.sh -p -r /absolute/path/where/image/will/be/unpacked -i /absolute/path/to/uramdisk.image.gz
+  $ ./uboot-mkimage.sh -m pack -r /absolute/path/where/image/will/be/unpacked -i /absolute/path/to/uramdisk.image.gz
 
 
 Easy!

@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style>body {
+      margin: auto;
+      padding-right: 1em;
+      padding-left: 1em;
+      max-width: 44em; 
+      border-left: 1px solid black;
+      border-right: 1px solid black;
+      color: black;
+      font-family: verdana, sans-serif;
+      font-size: 100%;
+      line-height: 140%;
+      color: #333; 
+  }
+  pre {
+      border: 1px dotted gray;
+      background-color: #ececec;
+      color: #1111111;
+      padding: 0.5em;
+  }
+  code {
+      font-family: monospace;
+  }
+  h1 a, h2 a, h3 a, h4 a, h5 a { 
+      text-decoration: none;
+      color: #5999d9; 
+  }
+  h1, h2, h3, h4, h5 { font-family: verdana;
+                       font-weight: bold;
+                       border-bottom: 1px dotted black;
+                       color: #5999d9; }
+  h1 {
+          font-size: 130%;
+  }
+  
+  h2 {
+          font-size: 110%;
+  }
+  
+  h3 {
+          font-size: 95%;
+  }
+  
+  h4 {
+          font-size: 90%;
+          font-style: italic;
+  }
+  
+  h5 {
+          font-size: 90%;
+          font-style: italic;
+  }
+  
+  h1.title {
+          font-size: 200%;
+          font-weight: bold;
+          padding-top: 0.2em;
+          padding-bottom: 0.2em;
+          text-align: left;
+          border: none;
+  }
+  
+  dt code {
+          font-weight: bold;
+  }
+  dd p {
+          margin-top: 0;
+  }
+  
+  #footer {
+          padding-top: 1em;
+          font-size: 70%;
+          color: gray;
+          text-align: center;
+          }
+  </style>
+</head>
+<body>
+<div id="TOC">
+<ul>
+<li><a href="#generar-fsbl">Generar FSBL <a name="fsbl"></a></a></li>
+<li><a href="#generar-boot.bin">Generar BOOT.bin</a></li>
+<li><a href="#configurar-lmk03806">Configurar LMK03806</a></li>
+<li><a href="#configurar-ad9516">Configurar AD9516</a></li>
+</ul>
+</div>
+<h2 id="generar-fsbl"><a href="#generar-fsbl">Generar FSBL <a name="fsbl"></a></a></h2>
+<p>En Vivado:</p>
+<ul>
+<li>File -&gt; Export -&gt; Export hardware
+<ul>
+<li>Include bitstream</li>
+<li>Local to project -&gt; OK</li>
+</ul></li>
+<li>Launch SDK</li>
+<li>New -&gt; Application Project
+<ul>
+<li>Give name to project (por ej. ‘fsbl’)</li>
+<li>Next</li>
+</ul></li>
+<li>Zynq FSBL, Finish</li>
+</ul>
+<p>Dentro del proyecto que contiene el fsbl <em>bueno</em>, copiar la carpeta ./wr-zen-hdl/syn/wrc2p-a7-zen-***/wrc2p-a7-zen-***.sdk/fsbl/src (ten en cuenta que fsbl fue el nombre dado en un paso anterior).</p>
+<p>Forzar la actualización de los archivos del proyecto (esto es, F5).</p>
+<p>Comprobar que no hay ningún problema a la hora de compilar (Build -&gt; Build all)</p>
+<p>Si todo va bien, al terminar el Build ya se ha generado el fsbl.elf</p>
+<h2 id="generar-boot.bin"><a href="#generar-boot.bin">Generar BOOT.bin</a></h2>
+<p>Para generar el BOOT.bin hace falta tener previamente tres ficheros:</p>
+<ul>
+<li>El fsbl.elf que acabamos de generar</li>
+<li>Un bitstream, generalmente un <em>golden</em> con las funcionalidades básicas</li>
+<li>El fichero u-boot.elf</li>
+</ul>
+<blockquote>
+<p><em>Nota: se señala que el u-boot empleado es para la Zen v2. Desconozco si algún problema puede derivar de esto</em>.</p>
+</blockquote>
+<p>Desde el SDK, en el menú Xilinx Tools -&gt; Create BOOT Image:</p>
+<ul>
+<li>Añadir esos tres ficheros en el orden que se han mencionado</li>
+<li>Se puede guardar esa configuración en un fichero .bif para generar el BOOT.bin de manera más rápida en el futuro.</li>
+</ul>
+<h2 id="configurar-lmk03806"><a href="#configurar-lmk03806">Configurar LMK03806</a></h2>
+<p>Configurar los registros del LMK partiendo de un fichero de configuración .mac generado desde CodeLoader (ver Google Drive del equipo) es muy sencillo si tenemos un proyecto de FSBL funcional como punto de partida. Se necesita sólamente el fichero .mac y el script lmkconf alojado en <a href="https://github.com/TimingKeepers/ugr-scripts">el repositorio ugr-scripts</a>.</p>
+<p>Escribiendo</p>
+<p><code>source lmkconf fichero.mac salida.txt</code></p>
+<p>se genera un fichero .txt que contiene el struct con los nuevos valores de los registros del LMK03806.</p>
+<p>Ya de vuelta al proyecto del fsbl, sustituiremos el struct presente en el fichero [ruta al fsbl]/src/lmk03806.c y continuamos con los pasos indicados para <a href="#fsbl">generar un nuevo FSBL</a>.</p>
+<h2 id="configurar-ad9516"><a href="#configurar-ad9516">Configurar AD9516</a></h2>
+<p>La configuración del AD9516 no se realiza en el FSBL sino que se programa mediante la ejecución de un binario <em>configure_ad9516</em> durante el arranque del SO, generalmente justo después de programar la PL de la Zen. Para cambiar los registros que se programan al chip se ha de generar un nuevo binario en el sistema de archivos.</p>
+<p>Supongamos que ya tenemos estos elementos de partida:</p>
+<ul>
+<li>Un fichero .stp con la nueva configuración de los registros (el software necesario para generarlo se puede encontrar en el Google Drive del equipo).</li>
+<li>Un entorno de trabajo en el que ya hemos podido compilar todos los ficheros resultado del repositorio wr-zynq-os.</li>
+</ul>
+<p>Y solo hay que seguir estos pasos:</p>
+<ul>
+<li>Llevar el fichero .stp al directorio donde están las herramientas relacionadas /…/wr-zynq-os/userspace/tools</li>
+<li>Ejecutar el script de python gen_ad9516_config.py pasándole como argumento el fichero .stp. Este script generará una nueva cabecera en ad9516_config.h .</li>
+</ul>
+<p>Ya sólo queda recompilar el espacio de usuario. Esto se puede conseguir llamando al script wrz-build-all desde fuera del directorio del repositorio y llevando a cabo los pasos 3, 4 y 5:</p>
+<p><code>./wr-zynq-os/build/wrz-build-all --step=03 &amp;&amp; ./wr-zynq-os/build/wrz-build-all --step=04 &amp;&amp;</code> <code>./wr-zynq-os/build/wrz-build-all --step=05</code></p>
+<p>Y la imagen del sistema de archivos con la nueva configuración para el AD9516 se encontrará en ./images/uramdisk.image.gz.</p>
+<div id="footer">
+   2015-2016 <a href="mailto:joselj@ugr.es">Jose Lopez Jimenez</a>
+</div>
+</body>
+</html>
