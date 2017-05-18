@@ -67,8 +67,8 @@ Y solo hay que seguir estos pasos:
 
 Ya sólo queda recompilar el espacio de usuario. Esto se puede conseguir llamando al script wrz-build-all desde fuera del directorio del repositorio y llevando a cabo los pasos 3, 4 y 5:
 
-`./wr-zynq-os/build/wrz-build-all --step=03 && ./wr-zynq-os/build/wrz-build-all --step=04 && `
-`./wr-zynq-os/build/wrz-build-all --step=05`
+`./wr-zynq-os/build/wrz_build-all --step=03 && ./wr-zynq-os/build/wrz_build-all --step=04 && `
+`./wr-zynq-os/build/wrz_build-all --step=05`
     
 Y la imagen del sistema de archivos con la nueva configuración para el AD9516 se encontrará en ./images/uramdisk.image.gz.
  
