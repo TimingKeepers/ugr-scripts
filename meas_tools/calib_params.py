@@ -34,7 +34,8 @@ import subprocess
 import argparse as arg
 
 # Define the shell command to retrieve the WR link status
-MONITOR = "gpa_ctrl ppsi"
+# use -f to force refresh every read
+MONITOR = "gpa_ctrl ppsi -f"
 
 # Regular expressions
 RTT_REGEX = r'servo/rtt.*\d+'
@@ -62,7 +63,7 @@ def main():
 
     values = [None, ] * args.samples
 
-    if args.key == "rtt":
+    if args.key == "rtt" or args.key == "crtt":
         regex = RRTT
     else:
         print("Invalid key used as argument (%s)" % args.key)
@@ -75,7 +76,9 @@ def main():
     drxm = int(RRXM.search(statout).group().split(":")[-1].strip())
     drxs = int(RRXS.search(statout).group().split(":")[-1].strip())
     print("BitSlides: M -> %d ps | S -> %d ps" % (drxm, drxs))
-    sub = drxm + drxs
+    sub = 0
+    if args.key == "crtt":
+        sub = drxm + drxs
 
     for i in range(args.samples):
         statout = subprocess.check_output([MONITOR], shell=True,
