@@ -46,11 +46,15 @@ def main():
 
     regex_pool = []
     for i in args.keys:
-        if i != "temp":
+        if i != "temp" and "temp" not in i:
             temp_r = r"%s:(\d+)" % i
             regex_pool.append(re.compile(temp_r))
         elif i == "temp":
             regex_pool.append(re.compile(r'temp:.(\d{2}\.\d{2})'))
+        elif "temp:" in i:
+            cad = i.split(":")[-1]
+            temp_r = r'%s:(\d{2}\.\d{2})' % cad
+            regex_pool.append(re.compile(temp_r))
 
     FILEOUT = "%s_output.%s" % (args.filein.split(".")[0], args.filein.split(".")[1])
     yesno = input("Output results will be saved in '%s', continue? y/n :"  % FILEOUT)
@@ -95,6 +99,9 @@ def main():
                         matched = 0
 
     # Remove dummy last line
+    if not ts_enabled:
+        exit(0)
+        
     with open(FILEOUT, 'r+') as tfile:
         tfile.seek(0, os.SEEK_END)
         pos = tfile.tell() - len(str(seed)) - 2
