@@ -36,6 +36,8 @@ def main():
     """Simple script for computing new values for discrete experimental vars"""
     parser = arg.ArgumentParser(description="Simple script for computing new values for discrete experimental vars")
     parser.add_argument('filein', metavar='FILEIN', type=str, help="Input file (remove before trailing whitespaces!)")
+    parser.add_argument('--separator', '-s', help="Separator character used",
+dest="sep",default=" ")
 
     args = parser.parse_args()
 
@@ -69,7 +71,7 @@ def main():
             dataset[i] = []
             
         for line in lines:
-            s = line.split(" ")
+            s = line.split(args.sep)
             i = 0
             for k in s:
                 dataset[i].append(k)
