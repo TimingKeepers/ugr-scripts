@@ -10,4 +10,4 @@ spll_reader.o: spll_reader.c
 	$(CC) $(CFLAGS) -c spll_reader.c
 
 clean:
-	$(RM) spll_reader *.o
+	@$(RM) spll_reader *.o
