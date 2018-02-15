@@ -1,3 +1,23 @@
+/****************************
+ * NAME: dummy_sender.c
+ *
+ * DESCRIPTION:
+ *  tool to send periodical custom raw ethernet frames from a
+ *  configurable network interface. Tested on WR Switch.
+ * 
+ * USAGE:
+ *  dummy_sender -i interface [-d destination MAC addr]
+ *                            [-s source MAC addr]
+ *                            [-t Ethertype]
+ *
+ * AUTHOR:
+ *  Jose Lopez-Jimenez <joselj at ugr.es>
+ *
+ * DATES:
+ *  Creation: 2018-02-13
+ *  Last updated: 2018-02-15
+ */
+
 #include <arpa/inet.h>
 #include <linux/if_packet.h>
 #include <linux/ip.h>
@@ -62,11 +82,12 @@ int main(int argc, char *argv[])
     char ifName[IFNAMSIZ];
     uint8_t dst_mac[6]={0x01,0x1b,0x19,0x00,0x00,0x00}; // Default is raw ethernet PTP.
     uint8_t src_mac[6];
-    long eth_type;
+    long eth_type=0;
     char ** endstr = NULL;
     int user_srcadr = 0;
     strcpy(s_addr,"127.0.0.1"); // Does not really matter
     strcpy(d_addr,"127.0.0.1"); // for a switch.
+    struct in_addr saddr_b,daddr_b;
     
     strcpy(ifName, DEFAULT_IF);
 
@@ -136,55 +157,84 @@ int main(int argc, char *argv[])
         perror("socket");
     }
 
+    // Getting network interface from name:
     memset(&if_idx,0,sizeof(struct ifreq));
     strncpy(if_idx.ifr_name,ifName,IFNAMSIZ-1);
     if(ioctl(sockfd,SIOCGIFINDEX,&if_idx)<0)
         perror("SIOCGIFINDEX");
 
+    // Getting source mac address from network interface:
     memset(&if_mac,0,sizeof(struct ifreq));
     strncpy(if_mac.ifr_name, ifName, IFNAMSIZ-1);
     if(ioctl(sockfd, SIOCGIFHWADDR, &if_mac)<0)
         perror("SIOCGIFHWADDR");
 
+    // Make sure that the buffer is clear
     memset(sendbuf,0,BUF_SIZ);
-    if(user_srcadr == 1){
 
-    eh->ether_shost[0] = src_mac[0];
-    eh->ether_shost[1] = src_mac[1];
-    eh->ether_shost[2] = src_mac[2];
-    eh->ether_shost[3] = src_mac[3];
-    eh->ether_shost[4] = src_mac[4];
-    eh->ether_shost[5] = src_mac[5];
+    // Fill ethernet header with actual or user-defined source MAC address
+    if(user_srcadr == 1){
+        for(j=0;j<6;j++) eh->ether_shost[j] = src_mac[j];
     }
     else{
-        eh->ether_shost[0] = ((uint8_t *)&if_mac.ifr_hwaddr.sa_data)[0];
-        eh->ether_shost[1] = ((uint8_t *)&if_mac.ifr_hwaddr.sa_data)[1];
-        eh->ether_shost[2] = ((uint8_t *)&if_mac.ifr_hwaddr.sa_data)[2];
-        eh->ether_shost[3] = ((uint8_t *)&if_mac.ifr_hwaddr.sa_data)[3];
-        eh->ether_shost[4] = ((uint8_t *)&if_mac.ifr_hwaddr.sa_data)[4];
-        eh->ether_shost[5] = ((uint8_t *)&if_mac.ifr_hwaddr.sa_data)[5];
+        for(j=0;j<6;j++) eh->ether_shost[j] = ((uint8_t *) &if_mac.ifr_hwaddr.sa_data)[j];
     }
-    eh->ether_dhost[0] = dst_mac[0];
-    eh->ether_dhost[1] = dst_mac[1];
-    eh->ether_dhost[2] = dst_mac[2];
-    eh->ether_dhost[3] = dst_mac[3];
-    eh->ether_dhost[4] = dst_mac[4];
-    eh->ether_dhost[5] = dst_mac[5];
 
+    // Same for dest MAC address
+    for(j=0;j<6;j++) eh->ether_dhost[j] = dst_mac[j];
 
+    // And same for Ethertype
     if(eth_type != 0){
         eh->ether_type = htons((uint16_t) eth_type);
     }else{
         eh->ether_type = htons(ETH_P_IP);
     }
 
+    // We are done with the Ethernet header and now it is turn for the IP header.
+    // First some fields of no real importance for our purposes.
     iph->ihl     = 5;
+    iph->ttl     = 64;
     iph->version = 4;
     iph->protocol= IPPROTO_RAW;
-    iph->saddr   = inet_addr(s_addr);
-    iph->daddr   = inet_addr(d_addr);
-    iph->check   = checksum((unsigned short *) iph, sizeof(struct iphdr));
+    
+    // The strings containing IP addresses are parsed
+    // and stored in another variable
+    inet_aton(s_addr,&saddr_b);
+    inet_aton(d_addr,&daddr_b);
 
+    // Because of endianness issues, the IP addresses are written into
+    // the buffer byte upon byte, so we make use of some auxiliary
+    // pointers.
+    uint8_t * tmp_ptr1 = (uint8_t *) &iph->saddr;
+    uint8_t * tmp_ptr2 = (uint8_t *) &saddr_b;
+    uint8_t * tmp_ptr3 = (uint8_t *) &daddr_b;
+
+
+    for(j=0;j<4;j++){
+        *(tmp_ptr1+j) = *(tmp_ptr2+j); 
+    }
+
+    tmp_ptr1 = (uint8_t *) &iph->daddr;
+
+    for(j=0;j<4;j++){
+        *(tmp_ptr1+j) = *(tmp_ptr3+j); 
+    }
+
+    // Testing that every part of the address is in its place
+    /*
+    tmp_ptr1 = (uint8_t *) &iph->saddr;
+    for(j=-2;j<11;j++){
+        
+        printf("Addr: %p content: %x\n",(tmp_ptr1+j),*(tmp_ptr1+j));
+
+    }
+    */
+    
+    // IP header checksum
+    iph->check   = htons(checksum((unsigned short *) iph, sizeof(struct iphdr)));
+
+    // No need for UDP things, so instead we just write a bunch of bytes so that
+    // the frames are not empty.
     udph->source = htons(1797);
     udph->dest   = htons(1798);
 
@@ -219,6 +269,7 @@ int main(int argc, char *argv[])
     iph->tot_len = htons(tx_len);
     udph->len    = htons(tx_len - sizeof(struct ether_header) - sizeof(struct iphdr));
 
+    // Rinse and repeat
     for(;;){
         if(sendto(sockfd,sendbuf,tx_len,0,(struct sockaddr*)&socket_address,sizeof(struct sockaddr_ll))<0)
             printf("Failure sending frame\n");
