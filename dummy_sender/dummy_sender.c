@@ -72,6 +72,7 @@ int main(int argc, char *argv[])
     char s_addr[INET_ADDRSTRLEN];
     char d_addr[INET_ADDRSTRLEN];
     int c,j;
+    int count=0;
     int values[6];
 
     struct ether_header *eh = (struct ether_header *) sendbuf;
@@ -91,7 +92,7 @@ int main(int argc, char *argv[])
     
     strcpy(ifName, DEFAULT_IF);
 
-    while((c=getopt(argc,argv,"i:d:s:t:h")) != -1)
+    while((c=getopt(argc,argv,"i:d:s:t:hc:")) != -1)
         switch(c)
         {
             case 'i': // Network interface
@@ -122,6 +123,11 @@ int main(int argc, char *argv[])
             
             case 'h':
                 print_help();
+                break;
+
+            case 'c':
+                count=atoi(optarg);
+                break;
 
             case '?':
                 if(optopt == 'i' || optopt == 'd' || optopt == 't')
@@ -270,12 +276,24 @@ int main(int argc, char *argv[])
     udph->len    = htons(tx_len - sizeof(struct ether_header) - sizeof(struct iphdr));
 
     // Rinse and repeat
-    for(;;){
-        if(sendto(sockfd,sendbuf,tx_len,0,(struct sockaddr*)&socket_address,sizeof(struct sockaddr_ll))<0)
-            printf("Failure sending frame\n");
-        
-        usleep(200000);
+    if(count==0)
+    {
+        for(;;){
+            if(sendto(sockfd,sendbuf,tx_len,0,(struct sockaddr*)&socket_address,sizeof(struct sockaddr_ll))<0)
+                printf("Failure sending frame\n");
 
+            usleep(200000);
+
+        }
+    }else{
+        while(count-- > 0)
+        {
+
+            if(sendto(sockfd,sendbuf,tx_len,0,(struct sockaddr*)&socket_address,sizeof(struct sockaddr_ll))<0)
+                printf("Failure sending frame\n");
+
+            usleep(200000);
+        }
     }
 
     return 0;
