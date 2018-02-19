@@ -9,6 +9,8 @@
  *  dummy_sender -i interface [-d destination MAC addr]
  *                            [-s source MAC addr]
  *                            [-t Ethertype]
+ *                            [-c number of packets]
+ *                            [-p period (in us)]
  *
  * AUTHOR:
  *  Jose Lopez-Jimenez <joselj at ugr.es>
@@ -57,6 +59,7 @@ uint16_t checksum(const uint16_t* buf, unsigned int nbytes)
 void print_help(){
     printf("Usage:\n");
     printf("dummy_sender -i interface [-d dst_mac] [-s src_mac] [-t ethertype]\n");
+    printf("                          [-c count] [-p period (us)]\n");
     printf("Example:\n\t dummy_sender -i wr1 -d 01:19:1B:00:00:00 -t 0x88F7");
     
     exit(0);
@@ -74,6 +77,7 @@ int main(int argc, char *argv[])
     int c,j;
     int count=0;
     int values[6];
+    int period = 200000;
 
     struct ether_header *eh = (struct ether_header *) sendbuf;
     struct iphdr *iph = (struct iphdr *) (sendbuf + sizeof(struct ether_header));
@@ -92,7 +96,7 @@ int main(int argc, char *argv[])
     
     strcpy(ifName, DEFAULT_IF);
 
-    while((c=getopt(argc,argv,"i:d:s:t:hc:")) != -1)
+    while((c=getopt(argc,argv,"i:d:s:t:hc:p:")) != -1)
         switch(c)
         {
             case 'i': // Network interface
@@ -127,6 +131,10 @@ int main(int argc, char *argv[])
 
             case 'c':
                 count=atoi(optarg);
+                break;
+
+            case 'p':
+                period=atoi(optarg);
                 break;
 
             case '?':
@@ -292,7 +300,7 @@ int main(int argc, char *argv[])
             if(sendto(sockfd,sendbuf,tx_len,0,(struct sockaddr*)&socket_address,sizeof(struct sockaddr_ll))<0)
                 printf("Failure sending frame\n");
 
-            usleep(200000);
+            usleep(period);
         }
     }
 
