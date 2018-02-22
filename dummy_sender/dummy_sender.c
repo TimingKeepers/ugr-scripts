@@ -103,11 +103,18 @@ int main(int argc, char *argv[])
                 strcpy(ifName,optarg);
                 break;
             case 'd': // Destination MAC address
+                if(!strcasecmp(optarg,"broadcast"))
+                {
+                    for(j=0;j<6;j++) dst_mac[j]=0xff;
+                    break;
+                }else if(!strcasecmp(optarg,"ptp")){
+                    break;
+                }
                 if( 6 == sscanf( optarg, "%x:%x:%x:%x:%x:%x%*c", &values[0], &values[1], &values[2], &values[3], &values[4], &values[5])){
                     for(j=0;j<6;++j)
                         dst_mac[j] = (uint8_t) values[j];
                 }else{
-                    fprintf(stderr,"Error parsing src MAC.\nMAC addr format must be XX:XX:XX:XX:XX:XX\n");
+                    fprintf(stderr,"Error parsing src MAC.\n");
                     print_help();
                 }
                 break;
