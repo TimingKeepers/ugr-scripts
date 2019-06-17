@@ -166,12 +166,16 @@ int parse_spll_sample(FILE ** fds, char *dst, uint32_t value, uint16_t seq_id, u
         strcat(dst,"");
 
 
+
         sprintf(temp,"%d\n",(int32_t) (sample_value % 0xFFFFFF));
         strcat(dst,temp);
 
         if( (0x80000000 & value) )
+        {
             strcat(dst,"--------------------------------------------------------------------------------\n");
-        fprintf(fds[0],"%s",dst);
+        }
+        if(options & MODE_FILE)
+            fprintf(fds[0],"%s",dst);
     }
 /* TODO: EVENTS (START, LOCKED) ARE IGNORED!!!*/             
     return 0;
@@ -226,7 +230,7 @@ int main(int argc, char *argv[])
                 break;
             case 'f':
                 options |= MODE_FILE;
-                options = options | (!MODE_STDOUT);
+                //options &= (!MODE_STDOUT);
                 strcpy(filename,optarg);
                 break;
             case 'v':
@@ -283,6 +287,7 @@ int main(int argc, char *argv[])
     if (connect(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr)) < 0) 
         error("ERROR connecting");
     bzero(buffer,2048);
+
 
     if((options & MODE_CSV) && (options & MODE_FILE))
     {
@@ -342,6 +347,7 @@ source:\t0 - main PLL\n\
     uint16_t *shortp;
     uint16_t value_hi,value_lo,seq_id;
 
+
     for(;;)
     {
         update_counter++;
@@ -367,6 +373,7 @@ source:\t0 - main PLL\n\
             value_lo = shortp[0];
             seq_id   = shortp[2];
             shortp  += 4;
+
 
             parse_spll_sample(fpointers,tempSample,( (value_hi<<16) | value_lo) ,seq_id,options);
 
